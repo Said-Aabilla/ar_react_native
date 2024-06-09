@@ -1,0 +1,2 @@
+assets/bugatti/bugatti.obj filter=lfs diff=lfs merge=lfs -text
+assets/bugatti/bugatti.blend filter=lfs diff=lfs merge=lfs -text
