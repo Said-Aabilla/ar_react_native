@@ -23,6 +23,10 @@ target 'GeoARApp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  # Add ViroReact and ViroKit pods
+  pod 'ViroReact', :path => '../node_modules/@reactvision/react-viro/ios/'
+  pod 'ViroKit', :path => '../node_modules/@reactvision/react-viro/ios/dist/ViroRenderer/'
+
   target 'GeoARAppTests' do
     inherit! :complete
     # Pods for testing
