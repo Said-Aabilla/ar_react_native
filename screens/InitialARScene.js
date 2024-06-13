@@ -42,12 +42,12 @@ const InitialARScene = () => {
           // <Viro360Image source={require('../assets/test.jpg')} />
 
          //local
-        <Viro3DObject
-          source={require('../assets/bugatti/bugatti.obj')} 
-          position={[0, 0,-1]}
-          scale={[0.05, 0.05, 0.05]}
-          type="obj"
-        />
+        // <Viro3DObject
+        //   source={require('../assets/bugatti/bugatti.obj')} 
+        //   position={[0, 0,-1]}
+        //   scale={[0.05, 0.05, 0.05]}
+        //   type="obj"
+        // />
 
            //local
         //    <Viro3DObject
@@ -58,12 +58,12 @@ const InitialARScene = () => {
         //  />
 
          //distant
-          // <Viro3DObject
-          //   source={{ uri: "https://github.com/KhronosGroup/glTF-Sample-Models/raw/master/2.0/Duck/glTF-Binary/Duck.glb"}} 
-          //   position={[0, 0, -1]}
-          //   scale={[0.1, 0.1, 0.1]}
-          //   type="GLB"
-          // />
+          <Viro3DObject
+            source={{ uri: "https://github.com/KhronosGroup/glTF-Sample-Models/blob/main/2.0/Duck/glTF-Binary/Duck.glb?raw=true"}} 
+            position={[0, 0, -1]}
+            scale={[0.1, 0.1, 0.1]}
+            type="GLB"
+          />
 
       
       )}
