@@ -1,79 +1,174 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native AR Integration Tutorial with @reactvision/react-viro
 
-# Getting Started
+This guide provides step-by-step instructions to integrate AR functionality into a React Native project using the `@reactvision/react-viro` library.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+---
 
-## Step 1: Start the Metro Server
+## Steps
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
-
-To start Metro, run the following command from the _root_ of your React Native project:
-
+### Step 1: Install the Library
+Run the following command to install `@reactvision/react-viro`:
 ```bash
-# using npm
-npm start
-
-# OR using Yarn
-yarn start
+npm install --save @reactvision/react-viro
 ```
 
-## Step 2: Start your Application
+### Step 2: Update `app.json`
+Add the following configuration to the `plugins` array in your `app.json` file:
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
-```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
+```json
+[
+  "@reactvision/react-viro",
+  {
+    "android": {
+      "xRMode": ["AR"]
+    },
+    "ios": {
+      "cameraUsagePermission": "$(PRODUCT_NAME) uses your camera for AR experiences. This is a custom InfoPlist string!",
+      "microphoneUsagePermission": "$(PRODUCT_NAME) uses your microphone for AR experiences. This is a custom InfoPlist string!",
+      "photosPermission": "$(PRODUCT_NAME) would like to read photos for AR experiences. This is a custom InfoPlist string!",
+      "savephotosPermission": "$(PRODUCT_NAME) would like to save photos to your library during AR experiences. This is a custom InfoPlist string!"
+    }
+  }
+]
 ```
 
-### For iOS
+### Step 3: Generate Android Folder
+Run the following command to generate the `android` folder:
 
 ```bash
-# using npm
-npm run ios
-
-# OR using Yarn
-yarn ios
+npx expo prebuild --clean -p android --no-install
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+### Step 4: Create and Modify `metro.config.js`
+Create the `metro.config.js` file using the following command:
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+```bash
+npx expo customize metro.config.js
+```
 
-## Step 3: Modifying your App
+Modify the file to include the following configuration:
 
-Now that you have successfully run the app, let's modify it.
+```javascript
+Copier le code
+const { getDefaultConfig } = require('expo/metro-config');
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+const config = getDefaultConfig(__dirname);
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+config.resolver.assetExts.push(
+  // Adds support for `glb` files
+  'glb'
+);
 
-## Congratulations! :tada:
+module.exports = config;
+```
 
-You've successfully run and modified your React Native App. :partying_face:
+### Step 5: Create an AR Component
+Create an AR component (e.g., `ArComponent.js`) with the following code:
 
-### Now what?
+```javascript
+import React, { useState } from "react";
+import {
+  ViroARScene,
+  ViroTrackingStateConstants,
+  Viro3DObject,
+  ViroAmbientLight
+} from "@reactvision/react-viro";
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+const ArComponent = (props) => {
+  const [trackingInitialized, setTrackingInitialized] = useState(false);
+  const [duckScale, setDuckScale] = useState([0.1, 0.1, 0.1]);
 
-# Troubleshooting
+  function onInitialized(state, reason) {
+    console.log("guncelleme", state, reason);
+    if (state === ViroTrackingStateConstants.TRACKING_NORMAL) {
+      setTrackingInitialized(true);
+    }
+  }
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+  function handleClick() {
+    console.log("Clicking on duck!");
+  }
 
-# Learn More
+  function handleDrag(dragToPos) {
+    console.log("Dragged to position:", dragToPos);
+  }
 
-To learn more about React Native, take a look at the following resources:
+  function handlePinch(pinchState, scaleFactor, source) {
+    if (pinchState === 3) { // Pinch end
+      setDuckScale([
+        duckScale[0] * scaleFactor,
+        duckScale[1] * scaleFactor,
+        duckScale[2] * scaleFactor
+      ]);
+    }
+  }
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+  return (
+    <ViroARScene onTrackingUpdated={onInitialized}>
+      <ViroAmbientLight color="#FFFFFF" />
+      {trackingInitialized && (
+        <Viro3DObject
+          source={{
+            uri: "https://github.com/KhronosGroup/glTF-Sample-Models/blob/main/2.0/Duck/glTF-Binary/Duck.glb?raw=true"
+          }}
+          position={[0, 0, -1]}
+          scale={duckScale}
+          type="GLB"
+          onClick={handleClick}
+          onDrag={handleDrag}
+          onPinch={handlePinch}
+        />
+      )}
+    </ViroARScene>
+  );
+};
+
+export default ArComponent;
+```
+
+
+### Step 6: Create an AR Screen
+Create an AR screen (e.g., `ARScreen.js`) with the following code:
+
+```javascript
+import React from "react";
+import { ViroARSceneNavigator } from "@reactvision/react-viro";
+import ArComponent from "../components/ar/ArComponent";
+
+export default function ARScreen() {
+  return (
+    <ViroARSceneNavigator
+      initialScene={{ scene: ArComponent }}
+      style={{ flex: 1 }}
+    />
+  );
+}
+```
+
+### Step 7: Add AR Screen to Routes
+Add the AR screen to your routes and use a router to launch it. Example code:
+
+```javascript
+<Stack.Screen name="ar" options={{ headerShown: false }} />
+
+const router = useRouter();
+
+const handleArScene = () => {
+  router.push("/ar");
+};
+```
+
+### Step 8: Build the App
+Run the following command to build the app:
+
+```bash
+eas build --profile development --platform android
+```
+
+
+### Step 9: Start the Development Server
+Finally, start the development server using:
+
+```bash
+npx expo start
+```
